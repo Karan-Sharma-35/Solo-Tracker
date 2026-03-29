@@ -13,21 +13,22 @@
     <div class="system-window">
         <div class="system-header">
             <h1>[ SYSTEM ALERT ]</h1>
+            <h3 class="level-display">[ LEVEL: <span id="player-level">1</span> ]</h3>
             <p id="current-day">Loading current cycle...</p>
             
             <div class="xp-container">
-                <div class="xp-text" id="xp-text-display">[ PROGRESS TO LEVEL UP: 2% ]</div>
+                <div class="xp-text" id="xp-text-display">[ PROGRESS TO NEXT LEVEL: 0% ]</div>
                 <div class="xp-bar-bg">
-                    <div class="xp-bar-fill" id="xp-bar" style="width: 2%;"></div>
+                    <div class="xp-bar-fill" id="xp-bar" style="width: 0%;"></div>
                 </div>
             </div>
         </div>
 
         <div class="tabs">
-            <button onclick="switchTab('quests')" class="active">Daily Quests</button>
-            <button onclick="switchTab('grimoire')">Grimoire</button>
-            <button onclick="switchTab('status')">Player Status</button>
-            <button onclick="switchTab('info-hub')">Info Hub</button>
+            <button onclick="switchTab('quests')" class="active">Quests</button>
+            <button onclick="switchTab('calendar')">Forecast</button>
+            <button onclick="switchTab('grimoire')">Recipes</button>
+            <button onclick="switchTab('status')">Status</button>
         </div>
 
         <div id="quests" class="tab-content active">
@@ -40,10 +41,21 @@
                 <ul id="meal-list"></ul>
             </div>
             <div class="panel">
-                <h2>Quest Checklist</h2>
-                <label class="check-container"><input type="checkbox" id="chk-workout" onchange="calculateXP()"> Complete Workout<span class="checkmark"></span></label>
-                <label class="check-container"><input type="checkbox" id="chk-weight" onchange="calculateXP()" disabled> Log Weight (Auto-checks via Sync)<span class="checkmark"></span></label>
-                <label class="check-container"><input type="checkbox" id="chk-macros" onchange="calculateXP()"> Adhere to Macros<span class="checkmark"></span></label>
+                <h2>Daily Checklist (Grants XP)</h2>
+                <label class="check-container"><input type="checkbox" id="chk-workout" onchange="handleQuest('chk-workout', 35)"> Complete Workout (+35 XP)<span class="checkmark"></span></label>
+                <label class="check-container"><input type="checkbox" id="chk-macros" onchange="handleQuest('chk-macros', 35)"> Adhere to Macros (+35 XP)<span class="checkmark"></span></label>
+                <label class="check-container"><input type="checkbox" id="chk-weight" onchange="handleQuest('chk-weight', 30)" disabled> Log Weight via Status (+30 XP)<span class="checkmark"></span></label>
+            </div>
+        </div>
+
+        <div id="calendar" class="tab-content">
+            <div class="panel">
+                <h2>Cycle Forecast (Current Month)</h2>
+                <div id="calendar-grid" class="calendar-grid"></div>
+                <div class="calendar-legend">
+                    <span class="legend-high">■ High Carb</span>
+                    <span class="legend-low">■ Low Carb</span>
+                </div>
             </div>
         </div>
 
@@ -97,36 +109,27 @@
                 <p id="sync-message" style="display:none; color: #00e5ff; margin-top: 10px;">[ Data Synced. Quest Updated. ]</p>
             </div>
         </div>
-
-        <div id="info-hub" class="tab-content">
-            <div class="panel chat-panel">
-                <h2>System Link Established</h2>
-                <div class="chat-log" id="chat-log">
-                    <div class="message system-msg">[ SYSTEM ]: Information Hub initialized. Awaiting player query regarding current diet or exercise protocol.</div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="chat-input" placeholder="Ask the System..." onkeypress="handleChatEnter(event)">
-                    <button onclick="sendChatMessage()" class="action-btn chat-send">SEND</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
-        // Data Initialization & Local Storage Setup
-        const startWeight = 119.0;
-        let currentWeight = parseFloat(localStorage.getItem('systemCurrentWeight')) || startWeight;
+        // --- CORE DATA & SYSTEM INITIALIZATION ---
+        let currentWeight = parseFloat(localStorage.getItem('systemCurrentWeight')) || 119.0;
         let targetWeight = parseFloat(localStorage.getItem('systemTargetWeight')) || 100.0;
+        let playerLevel = parseInt(localStorage.getItem('systemPlayerLevel')) || 1;
+        let currentXP = parseInt(localStorage.getItem('systemCurrentXP')) || 0;
 
         document.getElementById('current-weight-display').innerText = currentWeight.toFixed(1) + ' kg';
         document.getElementById('target-weight-display').innerText = targetWeight.toFixed(1) + ' kg';
+        document.getElementById('player-level').innerText = playerLevel;
+        updateXPDisplay();
 
-        // Cycle Logic
+        // --- CYCLE LOGIC ---
+        const dateObj = new Date();
         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const today = new Date().getDay();
-        const isHighCarb = (today === 0 || today === 2 || today === 4); 
+        const todayDayIndex = dateObj.getDay();
+        const isHighCarb = (todayDayIndex === 0 || todayDayIndex === 2 || todayDayIndex === 4); 
         
-        document.getElementById('current-day').innerText = `Cycle: ${days[today]} - ${isHighCarb ? 'HIGH CARB' : 'LOW CARB'}`;
+        document.getElementById('current-day').innerText = `Cycle: ${days[todayDayIndex]} - ${isHighCarb ? 'HIGH CARB' : 'LOW CARB'}`;
         document.getElementById('workout-type').innerText = isHighCarb ? '▶ 20-Minute HIIT Protocol' : '▶ Low-Intensity Recovery (Walk / Table Tennis)';
         
         const meals = isHighCarb 
@@ -134,7 +137,88 @@
             : ['Tofu Bhurji', 'Garlic Butter Paneer & Veggies', 'Crispy Chilli Baby Corn', 'NuTrail Granola / Cheese Crisps'];
         document.getElementById('meal-list').innerHTML = meals.map(m => `<li>${m}</li>`).join('');
 
-        // Tab Switching
+        // --- DAILY RESET LOGIC ---
+        const todayString = dateObj.toDateString();
+        const savedDate = localStorage.getItem('systemDate');
+        
+        if (savedDate !== todayString) {
+            // It's a new day! Reset checkboxes
+            localStorage.setItem('chk-workout', 'false');
+            localStorage.setItem('chk-macros', 'false');
+            localStorage.setItem('chk-weight', 'false');
+            localStorage.setItem('systemDate', todayString);
+        } else {
+            // Load today's progress
+            document.getElementById('chk-workout').checked = localStorage.getItem('chk-workout') === 'true';
+            document.getElementById('chk-macros').checked = localStorage.getItem('chk-macros') === 'true';
+            document.getElementById('chk-weight').checked = localStorage.getItem('chk-weight') === 'true';
+        }
+
+        // --- LEVELING & XP LOGIC ---
+        function handleQuest(questId, xpValue) {
+            const isChecked = document.getElementById(questId).checked;
+            localStorage.setItem(questId, isChecked);
+            
+            if (isChecked) {
+                currentXP += xpValue;
+            } else {
+                currentXP -= xpValue; // Remove XP if un-checked
+            }
+
+            // Level Up Check
+            if (currentXP >= 100) {
+                playerLevel++;
+                currentXP = currentXP - 100;
+                localStorage.setItem('systemPlayerLevel', playerLevel);
+                document.getElementById('player-level').innerText = playerLevel;
+                alert(`[ SYSTEM ALERT: LEVEL UP! ]\nYou are now Level ${playerLevel}.`);
+            }
+            // Level Down Check (in case of un-checking)
+            if (currentXP < 0 && playerLevel > 1) {
+                playerLevel--;
+                currentXP = 100 + currentXP;
+                localStorage.setItem('systemPlayerLevel', playerLevel);
+                document.getElementById('player-level').innerText = playerLevel;
+            } else if (currentXP < 0) {
+                currentXP = 0; // Floor at level 1, 0%
+            }
+
+            localStorage.setItem('systemCurrentXP', currentXP);
+            updateXPDisplay();
+        }
+
+        function updateXPDisplay() {
+            document.getElementById('xp-bar').style.width = currentXP + '%';
+            document.getElementById('xp-text-display').innerText = `[ PROGRESS TO NEXT LEVEL: ${currentXP}% ]`;
+        }
+
+        // --- CALENDAR GENERATION ---
+        function generateCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const currentMonth = dateObj.getMonth();
+            const currentYear = dateObj.getFullYear();
+            const todayDate = dateObj.getDate();
+            
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            
+            let html = '<div class="cal-header">S</div><div class="cal-header">M</div><div class="cal-header">T</div><div class="cal-header">W</div><div class="cal-header">T</div><div class="cal-header">F</div><div class="cal-header">S</div>';
+            
+            for(let i=0; i<firstDay; i++) html += '<div class="cal-day" style="visibility:hidden"></div>';
+            
+            for(let i=1; i<=daysInMonth; i++) {
+                const dayOfWeek = new Date(currentYear, currentMonth, i).getDay();
+                const isHigh = (dayOfWeek === 0 || dayOfWeek === 2 || dayOfWeek === 4);
+                let classes = 'cal-day ' + (isHigh ? 'cal-high' : 'cal-low');
+                if (i === todayDate) classes += ' cal-today';
+                
+                html += `<div class="${classes}">${i}</div>`;
+            }
+            grid.innerHTML = html;
+        }
+        generateCalendar();
+
+        // --- FORMS & UI LOGIC ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
@@ -142,34 +226,6 @@
             event.target.classList.add('active');
         }
 
-        // --- DYNAMIC XP LOGIC ---
-        function calculateXP() {
-            let xp = 2; // Base level
-            
-            // Flat bonuses for daily quests
-            if (document.getElementById('chk-workout').checked) xp += 15;
-            if (document.getElementById('chk-macros').checked) xp += 15;
-            
-            // Complex bonus for logging weight and approaching target
-            if (document.getElementById('chk-weight').checked) {
-                xp += 10; // Flat bonus just for logging
-                
-                if (currentWeight < startWeight && currentWeight >= targetWeight) {
-                    // Calculates percentage of weight lost relative to the goal (Max 58 bonus XP)
-                    let progressMultiplier = (startWeight - currentWeight) / (startWeight - targetWeight);
-                    xp += (progressMultiplier * 58);
-                } else if (currentWeight <= targetWeight) {
-                    xp += 58; // Max out if target is hit
-                }
-            }
-            
-            // Cap at 100% and update UI
-            xp = Math.min(100, xp);
-            document.getElementById('xp-bar').style.width = xp + '%';
-            document.getElementById('xp-text-display').innerText = `[ PROGRESS TO LEVEL UP: ${Math.floor(xp)}% ]`;
-        }
-
-        // Target Weight Update Form
         document.getElementById('target-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const newTarget = parseFloat(document.getElementById('target-input').value);
@@ -177,55 +233,26 @@
             targetWeight = newTarget;
             document.getElementById('target-weight-display').innerText = newTarget.toFixed(1) + ' kg';
             document.getElementById('target-form').reset();
-            calculateXP(); // Recalculate if target changes
         });
 
-        // Current Weight Update / Sync Form
         document.getElementById('weight-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const newWeight = parseFloat(document.getElementById('weight-input').value);
             
-            // Save locally
             localStorage.setItem('systemCurrentWeight', newWeight);
             currentWeight = newWeight;
             document.getElementById('current-weight-display').innerText = newWeight.toFixed(1) + ' kg';
             
-            // Auto-check the Log Weight quest
-            document.getElementById('chk-weight').checked = true;
-            calculateXP();
+            // Auto-complete the Weight Quest if not already done today
+            if (!document.getElementById('chk-weight').checked) {
+                document.getElementById('chk-weight').checked = true;
+                handleQuest('chk-weight', 30);
+            }
             
-            // Mocking the Google Sheets Sync (Replace URL later)
-            const scriptURL = 'YOUR_GOOGLE_SCRIPT_URL_HERE'; 
-            fetch(scriptURL + '?weight=' + newWeight, { method: 'POST', mode: 'no-cors' })
-                .catch(err => console.log("Google Sheets link not yet configured."));
-
-            // Show success message
             document.getElementById('sync-message').style.display = 'block';
             setTimeout(() => document.getElementById('sync-message').style.display = 'none', 3000);
             document.getElementById('weight-form').reset();
         });
-
-        // Initialize XP bar on load
-        calculateXP();
-
-        // Info Hub Chat Logic
-        function handleChatEnter(event) { if (event.key === 'Enter') sendChatMessage(); }
-        function sendChatMessage() {
-            const input = document.getElementById('chat-input');
-            const message = input.value.trim();
-            if (!message) return;
-            const chatLog = document.getElementById('chat-log');
-            chatLog.innerHTML += `<div class="message player-msg">${message}</div>`;
-            input.value = '';
-            chatLog.scrollTop = chatLog.scrollHeight;
-            setTimeout(() => {
-                let systemReply = "[ SYSTEM ]: Query processed. Continue adhering to protocol.";
-                if(message.toLowerCase().includes("tofu") || message.toLowerCase().includes("paneer")) systemReply = "[ SYSTEM ]: Protein source optimal for Low Carb cycles.";
-                else if (message.toLowerCase().includes("hiit")) systemReply = "[ SYSTEM ]: HIIT restricted to High Carb days.";
-                chatLog.innerHTML += `<div class="message system-msg">${systemReply}</div>`;
-                chatLog.scrollTop = chatLog.scrollHeight;
-            }, 1000);
-        }
     </script>
 </body>
 </html>
