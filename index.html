@@ -75,14 +75,23 @@
                     </div>
                     <div class="stat-box">
                         <span class="stat-label">TARGET WEIGHT</span>
-                        <span class="stat-value target-glow">105.0 kg</span>
+                        <span class="stat-value target-glow" id="target-weight-display">--.- kg</span>
                     </div>
                 </div>
             </div>
+            
+            <div class="panel">
+                <h2>System Configuration</h2>
+                <form id="target-form">
+                    <input type="number" id="target-input" step="0.1" placeholder="Set Target Weight (kg)" required>
+                    <button type="submit" class="action-btn">Update Target</button>
+                </form>
+            </div>
+
             <div class="panel">
                 <h2>Update Player Stats</h2>
                 <form id="weight-form">
-                    <input type="number" id="weight-input" step="0.1" placeholder="Enter Weight (kg)" required>
+                    <input type="number" id="weight-input" step="0.1" placeholder="Enter Current Weight (kg)" required>
                     <button type="submit" class="action-btn">Sync to Database</button>
                 </form>
                 <p id="sync-message" style="display:none; color: #00e5ff; margin-top: 10px;">[ Data Synced to System ]</p>
@@ -127,6 +136,25 @@
             document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
         }
+
+        // --- NEW: Target Weight Storage Logic ---
+        const targetDisplay = document.getElementById('target-weight-display');
+        const savedTarget = localStorage.getItem('systemTargetWeight');
+
+        // Load saved target on startup
+        if (savedTarget) {
+            targetDisplay.innerText = savedTarget + ' kg';
+        }
+
+        // Save new target
+        document.getElementById('target-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newTarget = document.getElementById('target-input').value;
+            localStorage.setItem('systemTargetWeight', newTarget);
+            targetDisplay.innerText = newTarget + ' kg';
+            document.getElementById('target-form').reset();
+        });
+        // ----------------------------------------
 
         // Info Hub Chat Logic (Simulation)
         function handleChatEnter(event) {
