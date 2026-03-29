@@ -201,3 +201,75 @@
         function generateCalendar(month, year) {
             const grid = document.getElementById('calendar-grid');
             const label = document.getElementById('calendar-month-label');
+            const todayDate = dateObj.getDate();
+            const realMonth = dateObj.getMonth();
+            const realYear = dateObj.getFullYear();
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            label.innerText = `${monthNames[month]} ${year}`;
+            
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            
+            let html = '<div class="cal-header">S</div><div class="cal-header">M</div><div class="cal-header">T</div><div class="cal-header">W</div><div class="cal-header">T</div><div class="cal-header">F</div><div class="cal-header">S</div>';
+            
+            for(let i=0; i<firstDay; i++) html += '<div class="cal-day" style="visibility:hidden"></div>';
+            
+            for(let i=1; i<=daysInMonth; i++) {
+                const dayOfWeek = new Date(year, month, i).getDay();
+                const isHigh = (dayOfWeek === 0 || dayOfWeek === 2 || dayOfWeek === 4);
+                let classes = 'cal-day ' + (isHigh ? 'cal-high' : 'cal-low');
+                
+                if (i === todayDate && month === realMonth && year === realYear) classes += ' cal-today';
+                
+                html += `<div class="${classes}">${i}</div>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        function changeMonth(dir) {
+            navMonth += dir;
+            if (navMonth > 11) { navMonth = 0; navYear++; }
+            if (navMonth < 0) { navMonth = 11; navYear--; }
+            generateCalendar(navMonth, navYear);
+        }
+        
+        generateCalendar(navMonth, navYear);
+
+        // --- FORMS & UI LOGIC ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        document.getElementById('target-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newTarget = parseFloat(document.getElementById('target-input').value);
+            localStorage.setItem('systemTargetWeight', newTarget);
+            targetWeight = newTarget;
+            document.getElementById('target-weight-display').innerText = newTarget.toFixed(1) + ' kg';
+            document.getElementById('target-form').reset();
+        });
+
+        document.getElementById('weight-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newWeight = parseFloat(document.getElementById('weight-input').value);
+            
+            localStorage.setItem('systemCurrentWeight', newWeight);
+            currentWeight = newWeight;
+            document.getElementById('current-weight-display').innerText = newWeight.toFixed(1) + ' kg';
+            
+            if (!document.getElementById('chk-weight').checked) {
+                document.getElementById('chk-weight').checked = true;
+                handleQuest('chk-weight', 30);
+            }
+            
+            document.getElementById('sync-message').style.display = 'block';
+            setTimeout(() => document.getElementById('sync-message').style.display = 'none', 3000);
+            document.getElementById('weight-form').reset();
+        });
+    </script>
+</body>
+</html>
