@@ -16,9 +16,9 @@
             <p id="current-day">Loading current cycle...</p>
             
             <div class="xp-container">
-                <div class="xp-text">[ PROGRESS TO LEVEL UP: 65% ]</div>
+                <div class="xp-text" id="xp-text-display">[ PROGRESS TO LEVEL UP: 2% ]</div>
                 <div class="xp-bar-bg">
-                    <div class="xp-bar-fill" style="width: 65%;"></div>
+                    <div class="xp-bar-fill" id="xp-bar" style="width: 2%;"></div>
                 </div>
             </div>
         </div>
@@ -41,9 +41,9 @@
             </div>
             <div class="panel">
                 <h2>Quest Checklist</h2>
-                <label class="check-container"><input type="checkbox"> Complete Workout<span class="checkmark"></span></label>
-                <label class="check-container"><input type="checkbox"> Log Weight<span class="checkmark"></span></label>
-                <label class="check-container"><input type="checkbox"> Adhere to Macros<span class="checkmark"></span></label>
+                <label class="check-container"><input type="checkbox" id="chk-workout" onchange="calculateXP()"> Complete Workout<span class="checkmark"></span></label>
+                <label class="check-container"><input type="checkbox" id="chk-weight" onchange="calculateXP()" disabled> Log Weight (Auto-checks via Sync)<span class="checkmark"></span></label>
+                <label class="check-container"><input type="checkbox" id="chk-macros" onchange="calculateXP()"> Adhere to Macros<span class="checkmark"></span></label>
             </div>
         </div>
 
@@ -71,11 +71,11 @@
                 <div class="weight-stats">
                     <div class="stat-box">
                         <span class="stat-label">CURRENT WEIGHT</span>
-                        <span class="stat-value">119.0 kg</span>
+                        <span class="stat-value" id="current-weight-display">119.0 kg</span>
                     </div>
                     <div class="stat-box">
                         <span class="stat-label">TARGET WEIGHT</span>
-                        <span class="stat-value target-glow" id="target-weight-display">--.- kg</span>
+                        <span class="stat-value target-glow" id="target-weight-display">100.0 kg</span>
                     </div>
                 </div>
             </div>
@@ -94,7 +94,7 @@
                     <input type="number" id="weight-input" step="0.1" placeholder="Enter Current Weight (kg)" required>
                     <button type="submit" class="action-btn">Sync to Database</button>
                 </form>
-                <p id="sync-message" style="display:none; color: #00e5ff; margin-top: 10px;">[ Data Synced to System ]</p>
+                <p id="sync-message" style="display:none; color: #00e5ff; margin-top: 10px;">[ Data Synced. Quest Updated. ]</p>
             </div>
         </div>
 
@@ -113,11 +113,17 @@
     </div>
 
     <script>
-        // Set Day Logic (Alternating cycle starting Sunday)
+        // Data Initialization & Local Storage Setup
+        const startWeight = 119.0;
+        let currentWeight = parseFloat(localStorage.getItem('systemCurrentWeight')) || startWeight;
+        let targetWeight = parseFloat(localStorage.getItem('systemTargetWeight')) || 100.0;
+
+        document.getElementById('current-weight-display').innerText = currentWeight.toFixed(1) + ' kg';
+        document.getElementById('target-weight-display').innerText = targetWeight.toFixed(1) + ' kg';
+
+        // Cycle Logic
         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const today = new Date().getDay();
-        
-        // Sunday (0), Tuesday (2), Thursday (4) High Carb
         const isHighCarb = (today === 0 || today === 2 || today === 4); 
         
         document.getElementById('current-day').innerText = `Cycle: ${days[today]} - ${isHighCarb ? 'HIGH CARB' : 'LOW CARB'}`;
@@ -126,7 +132,6 @@
         const meals = isHighCarb 
             ? ['Masala Idli', 'Rajma & Yellow Rice', 'Maggi / Kodiak Pancakes', 'Pita Chips & Hummus']
             : ['Tofu Bhurji', 'Garlic Butter Paneer & Veggies', 'Crispy Chilli Baby Corn', 'NuTrail Granola / Cheese Crisps'];
-            
         document.getElementById('meal-list').innerHTML = meals.map(m => `<li>${m}</li>`).join('');
 
         // Tab Switching
@@ -137,71 +142,90 @@
             event.target.classList.add('active');
         }
 
-        // --- NEW: Target Weight Storage Logic ---
-        const targetDisplay = document.getElementById('target-weight-display');
-        const savedTarget = localStorage.getItem('systemTargetWeight');
-
-        // Load saved target on startup
-        if (savedTarget) {
-            targetDisplay.innerText = savedTarget + ' kg';
+        // --- DYNAMIC XP LOGIC ---
+        function calculateXP() {
+            let xp = 2; // Base level
+            
+            // Flat bonuses for daily quests
+            if (document.getElementById('chk-workout').checked) xp += 15;
+            if (document.getElementById('chk-macros').checked) xp += 15;
+            
+            // Complex bonus for logging weight and approaching target
+            if (document.getElementById('chk-weight').checked) {
+                xp += 10; // Flat bonus just for logging
+                
+                if (currentWeight < startWeight && currentWeight >= targetWeight) {
+                    // Calculates percentage of weight lost relative to the goal (Max 58 bonus XP)
+                    let progressMultiplier = (startWeight - currentWeight) / (startWeight - targetWeight);
+                    xp += (progressMultiplier * 58);
+                } else if (currentWeight <= targetWeight) {
+                    xp += 58; // Max out if target is hit
+                }
+            }
+            
+            // Cap at 100% and update UI
+            xp = Math.min(100, xp);
+            document.getElementById('xp-bar').style.width = xp + '%';
+            document.getElementById('xp-text-display').innerText = `[ PROGRESS TO LEVEL UP: ${Math.floor(xp)}% ]`;
         }
 
-        // Save new target
+        // Target Weight Update Form
         document.getElementById('target-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const newTarget = document.getElementById('target-input').value;
+            const newTarget = parseFloat(document.getElementById('target-input').value);
             localStorage.setItem('systemTargetWeight', newTarget);
-            targetDisplay.innerText = newTarget + ' kg';
+            targetWeight = newTarget;
+            document.getElementById('target-weight-display').innerText = newTarget.toFixed(1) + ' kg';
             document.getElementById('target-form').reset();
+            calculateXP(); // Recalculate if target changes
         });
-        // ----------------------------------------
 
-        // Info Hub Chat Logic (Simulation)
-        function handleChatEnter(event) {
-            if (event.key === 'Enter') sendChatMessage();
-        }
+        // Current Weight Update / Sync Form
+        document.getElementById('weight-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newWeight = parseFloat(document.getElementById('weight-input').value);
+            
+            // Save locally
+            localStorage.setItem('systemCurrentWeight', newWeight);
+            currentWeight = newWeight;
+            document.getElementById('current-weight-display').innerText = newWeight.toFixed(1) + ' kg';
+            
+            // Auto-check the Log Weight quest
+            document.getElementById('chk-weight').checked = true;
+            calculateXP();
+            
+            // Mocking the Google Sheets Sync (Replace URL later)
+            const scriptURL = 'YOUR_GOOGLE_SCRIPT_URL_HERE'; 
+            fetch(scriptURL + '?weight=' + newWeight, { method: 'POST', mode: 'no-cors' })
+                .catch(err => console.log("Google Sheets link not yet configured."));
 
+            // Show success message
+            document.getElementById('sync-message').style.display = 'block';
+            setTimeout(() => document.getElementById('sync-message').style.display = 'none', 3000);
+            document.getElementById('weight-form').reset();
+        });
+
+        // Initialize XP bar on load
+        calculateXP();
+
+        // Info Hub Chat Logic
+        function handleChatEnter(event) { if (event.key === 'Enter') sendChatMessage(); }
         function sendChatMessage() {
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
             if (!message) return;
-
             const chatLog = document.getElementById('chat-log');
-            
-            // Add Player Message
             chatLog.innerHTML += `<div class="message player-msg">${message}</div>`;
             input.value = '';
             chatLog.scrollTop = chatLog.scrollHeight;
-
-            // Simulate System Response delay
             setTimeout(() => {
-                let systemReply = "[ SYSTEM ]: Query processed. Continue adhering to the current cycle's macro limitations. Consistency is required to level up.";
-                
-                if(message.toLowerCase().includes("tofu") || message.toLowerCase().includes("paneer")) {
-                    systemReply = "[ SYSTEM ]: Protein source acknowledged. These are optimal for Low Carb (High Fat) recovery cycles.";
-                } else if (message.toLowerCase().includes("hiit")) {
-                    systemReply = "[ SYSTEM ]: HIIT Protocol is restricted to High Carb days to utilize available glycogen stores.";
-                }
-
+                let systemReply = "[ SYSTEM ]: Query processed. Continue adhering to protocol.";
+                if(message.toLowerCase().includes("tofu") || message.toLowerCase().includes("paneer")) systemReply = "[ SYSTEM ]: Protein source optimal for Low Carb cycles.";
+                else if (message.toLowerCase().includes("hiit")) systemReply = "[ SYSTEM ]: HIIT restricted to High Carb days.";
                 chatLog.innerHTML += `<div class="message system-msg">${systemReply}</div>`;
                 chatLog.scrollTop = chatLog.scrollHeight;
             }, 1000);
         }
-
-        // Send data to Google Sheets
-        document.getElementById('weight-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const weight = document.getElementById('weight-input').value;
-            // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
-            const scriptURL = 'YOUR_GOOGLE_SCRIPT_URL_HERE'; 
-            
-            fetch(scriptURL + '?weight=' + weight, { method: 'POST', mode: 'no-cors' })
-                .then(() => {
-                    document.getElementById('sync-message').style.display = 'block';
-                    setTimeout(() => document.getElementById('sync-message').style.display = 'none', 3000);
-                    document.getElementById('weight-form').reset();
-                });
-        });
     </script>
 </body>
 </html>
