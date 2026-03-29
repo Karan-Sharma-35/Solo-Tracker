@@ -13,6 +13,7 @@
     <div class="system-window">
         <div class="system-header">
             <h1>[ SYSTEM ALERT ]</h1>
+            <div class="player-name">PLAYER: KARAN (RBGoku)</div>
             <h3 class="level-display">[ LEVEL: <span id="player-level">1</span> ]</h3>
             <p id="current-day">Loading current cycle...</p>
             
@@ -50,7 +51,12 @@
 
         <div id="calendar" class="tab-content">
             <div class="panel">
-                <h2>Cycle Forecast (Current Month)</h2>
+                <h2>Cycle Forecast</h2>
+                <div class="calendar-nav">
+                    <button onclick="changeMonth(-1)" class="nav-btn">◄</button>
+                    <span id="calendar-month-label">March 2026</span>
+                    <button onclick="changeMonth(1)" class="nav-btn">►</button>
+                </div>
                 <div id="calendar-grid" class="calendar-grid"></div>
                 <div class="calendar-legend">
                     <span class="legend-high">■ High Carb</span>
@@ -142,13 +148,11 @@
         const savedDate = localStorage.getItem('systemDate');
         
         if (savedDate !== todayString) {
-            // It's a new day! Reset checkboxes
             localStorage.setItem('chk-workout', 'false');
             localStorage.setItem('chk-macros', 'false');
             localStorage.setItem('chk-weight', 'false');
             localStorage.setItem('systemDate', todayString);
         } else {
-            // Load today's progress
             document.getElementById('chk-workout').checked = localStorage.getItem('chk-workout') === 'true';
             document.getElementById('chk-macros').checked = localStorage.getItem('chk-macros') === 'true';
             document.getElementById('chk-weight').checked = localStorage.getItem('chk-weight') === 'true';
@@ -162,10 +166,9 @@
             if (isChecked) {
                 currentXP += xpValue;
             } else {
-                currentXP -= xpValue; // Remove XP if un-checked
+                currentXP -= xpValue; 
             }
 
-            // Level Up Check
             if (currentXP >= 100) {
                 playerLevel++;
                 currentXP = currentXP - 100;
@@ -173,14 +176,13 @@
                 document.getElementById('player-level').innerText = playerLevel;
                 alert(`[ SYSTEM ALERT: LEVEL UP! ]\nYou are now Level ${playerLevel}.`);
             }
-            // Level Down Check (in case of un-checking)
             if (currentXP < 0 && playerLevel > 1) {
                 playerLevel--;
                 currentXP = 100 + currentXP;
                 localStorage.setItem('systemPlayerLevel', playerLevel);
                 document.getElementById('player-level').innerText = playerLevel;
             } else if (currentXP < 0) {
-                currentXP = 0; // Floor at level 1, 0%
+                currentXP = 0; 
             }
 
             localStorage.setItem('systemCurrentXP', currentXP);
@@ -192,67 +194,10 @@
             document.getElementById('xp-text-display').innerText = `[ PROGRESS TO NEXT LEVEL: ${currentXP}% ]`;
         }
 
-        // --- CALENDAR GENERATION ---
-        function generateCalendar() {
+        // --- CALENDAR GENERATION WITH NAVIGATION ---
+        let navMonth = dateObj.getMonth();
+        let navYear = dateObj.getFullYear();
+
+        function generateCalendar(month, year) {
             const grid = document.getElementById('calendar-grid');
-            const currentMonth = dateObj.getMonth();
-            const currentYear = dateObj.getFullYear();
-            const todayDate = dateObj.getDate();
-            
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            
-            let html = '<div class="cal-header">S</div><div class="cal-header">M</div><div class="cal-header">T</div><div class="cal-header">W</div><div class="cal-header">T</div><div class="cal-header">F</div><div class="cal-header">S</div>';
-            
-            for(let i=0; i<firstDay; i++) html += '<div class="cal-day" style="visibility:hidden"></div>';
-            
-            for(let i=1; i<=daysInMonth; i++) {
-                const dayOfWeek = new Date(currentYear, currentMonth, i).getDay();
-                const isHigh = (dayOfWeek === 0 || dayOfWeek === 2 || dayOfWeek === 4);
-                let classes = 'cal-day ' + (isHigh ? 'cal-high' : 'cal-low');
-                if (i === todayDate) classes += ' cal-today';
-                
-                html += `<div class="${classes}">${i}</div>`;
-            }
-            grid.innerHTML = html;
-        }
-        generateCalendar();
-
-        // --- FORMS & UI LOGIC ---
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        document.getElementById('target-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newTarget = parseFloat(document.getElementById('target-input').value);
-            localStorage.setItem('systemTargetWeight', newTarget);
-            targetWeight = newTarget;
-            document.getElementById('target-weight-display').innerText = newTarget.toFixed(1) + ' kg';
-            document.getElementById('target-form').reset();
-        });
-
-        document.getElementById('weight-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newWeight = parseFloat(document.getElementById('weight-input').value);
-            
-            localStorage.setItem('systemCurrentWeight', newWeight);
-            currentWeight = newWeight;
-            document.getElementById('current-weight-display').innerText = newWeight.toFixed(1) + ' kg';
-            
-            // Auto-complete the Weight Quest if not already done today
-            if (!document.getElementById('chk-weight').checked) {
-                document.getElementById('chk-weight').checked = true;
-                handleQuest('chk-weight', 30);
-            }
-            
-            document.getElementById('sync-message').style.display = 'block';
-            setTimeout(() => document.getElementById('sync-message').style.display = 'none', 3000);
-            document.getElementById('weight-form').reset();
-        });
-    </script>
-</body>
-</html>
+            const label = document.getElementById('calendar-month-label');
