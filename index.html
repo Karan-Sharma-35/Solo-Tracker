@@ -8,60 +8,98 @@
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
-    <div class="system-header">
-        <h1>[ SYSTEM ALERT ]</h1>
-        <p id="current-day">Loading current cycle...</p>
-    </div>
+    <div class="dungeon-bg"></div>
 
-    <div class="tabs">
-        <button onclick="switchTab('quests')" class="active">Daily Quests</button>
-        <button onclick="switchTab('grimoire')">Recipe Grimoire</button>
-        <button onclick="switchTab('status')">Player Status</button>
-    </div>
+    <div class="system-window">
+        <div class="system-header">
+            <h1>[ SYSTEM ALERT ]</h1>
+            <p id="current-day">Loading current cycle...</p>
+            
+            <div class="xp-container">
+                <div class="xp-text">[ PROGRESS TO LEVEL UP: 65% ]</div>
+                <div class="xp-bar-bg">
+                    <div class="xp-bar-fill" style="width: 65%;"></div>
+                </div>
+            </div>
+        </div>
 
-    <div id="quests" class="tab-content active">
-        <div class="panel">
-            <h2>Quest Objective</h2>
-            <p id="workout-type"></p>
+        <div class="tabs">
+            <button onclick="switchTab('quests')" class="active">Daily Quests</button>
+            <button onclick="switchTab('grimoire')">Grimoire</button>
+            <button onclick="switchTab('status')">Player Status</button>
+            <button onclick="switchTab('info-hub')">Info Hub</button>
         </div>
-        <div class="panel">
-            <h2>Rations Available</h2>
-            <ul id="meal-list"></ul>
-        </div>
-        <div class="panel">
-            <h2>Quest Checklist</h2>
-            <label class="check-container"><input type="checkbox"> Complete Workout<span class="checkmark"></span></label>
-            <label class="check-container"><input type="checkbox"> Log Weight<span class="checkmark"></span></label>
-            <label class="check-container"><input type="checkbox"> Adhere to Macros<span class="checkmark"></span></label>
-        </div>
-    </div>
 
-    <div id="grimoire" class="tab-content">
-        <div class="panel">
-            <h2>Stored Recipes</h2>
-            <details>
-                <summary>Tofu Bhurji (Low-Carb)</summary>
-                <p>Crumble 1 block firm tofu. Heat ghee, add cumin seeds, turmeric, and 2 tsp Deep Dry Garlic Chutney. Add tofu and salt. Cook 5-7 mins until moisture evaporates.</p>
-            </details>
-            <details>
-                <summary>Crispy Chilli Baby Corn (Low-Carb Mod)</summary>
-                <p>Boil 15 baby corn pieces, halve, and marinate in lemon juice. Coat in almond flour, then crushed cheese crisps. Pan-fry in butter until golden. Dust with chaat masala.</p>
-            </details>
-            <details>
-                <summary>Masala Idli (High-Carb)</summary>
-                <p>Toss frozen idli in a pan with minimal oil, mustard seeds, curry leaves, peanuts, and dry chili garlic powder.</p>
-            </details>
+        <div id="quests" class="tab-content active">
+            <div class="panel">
+                <h2>Quest Objective</h2>
+                <p id="workout-type"></p>
+            </div>
+            <div class="panel">
+                <h2>Rations Available</h2>
+                <ul id="meal-list"></ul>
+            </div>
+            <div class="panel">
+                <h2>Quest Checklist</h2>
+                <label class="check-container"><input type="checkbox"> Complete Workout<span class="checkmark"></span></label>
+                <label class="check-container"><input type="checkbox"> Log Weight<span class="checkmark"></span></label>
+                <label class="check-container"><input type="checkbox"> Adhere to Macros<span class="checkmark"></span></label>
+            </div>
         </div>
-    </div>
 
-    <div id="status" class="tab-content">
-        <div class="panel">
-            <h2>Update Player Stats</h2>
-            <form id="weight-form">
-                <input type="number" id="weight-input" step="0.1" placeholder="Enter Weight (kg)" required>
-                <button type="submit" class="action-btn">Sync to Database</button>
-            </form>
-            <p id="sync-message" style="display:none; color: #00e5ff; margin-top: 10px;">[ Data Synced to Sheet ]</p>
+        <div id="grimoire" class="tab-content">
+            <div class="panel">
+                <h2>Stored Recipes</h2>
+                <details>
+                    <summary>Tofu Bhurji (Low-Carb)</summary>
+                    <p>Crumble 1 block firm tofu. Heat ghee, add cumin seeds, turmeric, and 2 tsp Deep Dry Garlic Chutney. Add tofu and salt. Cook 5-7 mins until moisture evaporates.</p>
+                </details>
+                <details>
+                    <summary>Crispy Chilli Baby Corn (Low-Carb Mod)</summary>
+                    <p>Boil 15 baby corn pieces, halve, and marinate in lemon juice. Coat in almond flour, then crushed cheese crisps. Pan-fry in butter until golden. Dust with chaat masala.</p>
+                </details>
+                <details>
+                    <summary>Masala Idli (High-Carb)</summary>
+                    <p>Toss frozen idli in a pan with minimal oil, mustard seeds, curry leaves, peanuts, and dry chili garlic powder.</p>
+                </details>
+            </div>
+        </div>
+
+        <div id="status" class="tab-content">
+            <div class="panel status-display">
+                <h2>Physical Parameters</h2>
+                <div class="weight-stats">
+                    <div class="stat-box">
+                        <span class="stat-label">CURRENT WEIGHT</span>
+                        <span class="stat-value">119.0 kg</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">TARGET WEIGHT</span>
+                        <span class="stat-value target-glow">105.0 kg</span>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <h2>Update Player Stats</h2>
+                <form id="weight-form">
+                    <input type="number" id="weight-input" step="0.1" placeholder="Enter Weight (kg)" required>
+                    <button type="submit" class="action-btn">Sync to Database</button>
+                </form>
+                <p id="sync-message" style="display:none; color: #00e5ff; margin-top: 10px;">[ Data Synced to System ]</p>
+            </div>
+        </div>
+
+        <div id="info-hub" class="tab-content">
+            <div class="panel chat-panel">
+                <h2>System Link Established</h2>
+                <div class="chat-log" id="chat-log">
+                    <div class="message system-msg">[ SYSTEM ]: Information Hub initialized. Awaiting player query regarding current diet or exercise protocol.</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Ask the System..." onkeypress="handleChatEnter(event)">
+                    <button onclick="sendChatMessage()" class="action-btn chat-send">SEND</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -70,7 +108,7 @@
         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const today = new Date().getDay();
         
-        // Let's make Sunday (0), Tuesday (2), Thursday (4) High Carb
+        // Sunday (0), Tuesday (2), Thursday (4) High Carb
         const isHighCarb = (today === 0 || today === 2 || today === 4); 
         
         document.getElementById('current-day').innerText = `Cycle: ${days[today]} - ${isHighCarb ? 'HIGH CARB' : 'LOW CARB'}`;
@@ -88,6 +126,38 @@
             document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
+        }
+
+        // Info Hub Chat Logic (Simulation)
+        function handleChatEnter(event) {
+            if (event.key === 'Enter') sendChatMessage();
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatLog = document.getElementById('chat-log');
+            
+            // Add Player Message
+            chatLog.innerHTML += `<div class="message player-msg">${message}</div>`;
+            input.value = '';
+            chatLog.scrollTop = chatLog.scrollHeight;
+
+            // Simulate System Response delay
+            setTimeout(() => {
+                let systemReply = "[ SYSTEM ]: Query processed. Continue adhering to the current cycle's macro limitations. Consistency is required to level up.";
+                
+                if(message.toLowerCase().includes("tofu") || message.toLowerCase().includes("paneer")) {
+                    systemReply = "[ SYSTEM ]: Protein source acknowledged. These are optimal for Low Carb (High Fat) recovery cycles.";
+                } else if (message.toLowerCase().includes("hiit")) {
+                    systemReply = "[ SYSTEM ]: HIIT Protocol is restricted to High Carb days to utilize available glycogen stores.";
+                }
+
+                chatLog.innerHTML += `<div class="message system-msg">${systemReply}</div>`;
+                chatLog.scrollTop = chatLog.scrollHeight;
+            }, 1000);
         }
 
         // Send data to Google Sheets
