@@ -1,14 +1,15 @@
 :root {
-    --bg-dark: #030305;
-    --panel-bg: rgba(10, 15, 25, 0.6);
+    --bg-dark-void: #01040a;      /* Deep space/dungeon void */
+    --bg-void-center: #0a1128;    /* Lighter center of the void */
+    --panel-bg: rgba(18, 43, 82, 0.55); /* Lighter blue for the window */
+    --panel-inner: rgba(5, 10, 20, 0.4); /* Inner panels stay dark for contrast */
     --neon-blue: #00e5ff;
     --neon-blue-dim: rgba(0, 229, 255, 0.3);
     --text-main: #e0e0e0;
-    --system-red: #ff2a2a;
 }
 
 body {
-    background-color: var(--bg-dark);
+    background-color: var(--bg-dark-void);
     color: var(--text-main);
     font-family: 'Courier New', Courier, monospace;
     margin: 0;
@@ -20,11 +21,11 @@ body {
     overflow-x: hidden;
 }
 
-/* Animated Dungeon Background */
+/* Dark Blue Void Background */
 .dungeon-bg {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
-    background: radial-gradient(circle at 50% 50%, #0a0e1a 0%, #020203 100%);
+    background: radial-gradient(circle at 50% 50%, var(--bg-void-center) 0%, var(--bg-dark-void) 100%);
     z-index: -1;
 }
 .dungeon-bg::after {
@@ -33,21 +34,21 @@ body {
     top: 0; left: 0; width: 100%; height: 100%;
     background-image: radial-gradient(var(--neon-blue-dim) 1px, transparent 1px);
     background-size: 50px 50px;
-    opacity: 0.1;
-    animation: drift 20s linear infinite;
+    opacity: 0.15;
+    animation: drift 25s linear infinite;
 }
 @keyframes drift {
     0% { background-position: 0 0; }
     100% { background-position: 50px 50px; }
 }
 
-/* The Floating System Window */
+/* The Lighter Floating System Window */
 .system-window {
-    background: rgba(5, 8, 15, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: var(--panel-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border: 1px solid var(--neon-blue);
-    box-shadow: 0 0 30px rgba(0, 229, 255, 0.15), inset 0 0 20px rgba(0, 229, 255, 0.05);
+    box-shadow: 0 0 40px rgba(0, 229, 255, 0.2), inset 0 0 25px rgba(0, 229, 255, 0.1);
     border-radius: 8px;
     width: 100%;
     max-width: 500px;
@@ -65,16 +66,16 @@ body {
     color: var(--neon-blue); 
     font-size: 24px; 
     margin: 0 0 10px 0;
-    text-shadow: 0 0 10px var(--neon-blue);
+    text-shadow: 0 0 12px var(--neon-blue);
     letter-spacing: 2px;
 }
 
 /* Progress Bar */
 .xp-container { margin-top: 15px; }
-.xp-text { font-size: 12px; color: #a1c4fd; margin-bottom: 5px; text-align: left;}
+.xp-text { font-size: 12px; color: #a1c4fd; margin-bottom: 5px; text-align: left; font-weight: bold;}
 .xp-bar-bg {
     width: 100%; height: 12px;
-    background: #111;
+    background: #050810;
     border: 1px solid #333;
     border-radius: 6px;
     overflow: hidden;
@@ -82,16 +83,16 @@ body {
 .xp-bar-fill {
     height: 100%;
     background: var(--neon-blue);
-    box-shadow: 0 0 10px var(--neon-blue);
-    transition: width 0.5s ease;
+    box-shadow: 0 0 15px var(--neon-blue);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Tabs */
 .tabs { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 5px; }
 .tabs button {
-    background: rgba(0,0,0,0.5);
-    border: 1px solid #333;
-    color: #777;
+    background: var(--panel-inner);
+    border: 1px solid #444;
+    color: #888;
     padding: 10px 5px;
     flex: 1;
     font-family: inherit;
@@ -103,8 +104,9 @@ body {
 .tabs button.active {
     border-color: var(--neon-blue);
     color: var(--neon-blue);
-    background: rgba(0, 229, 255, 0.1);
+    background: rgba(0, 229, 255, 0.15);
     box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.2);
+    text-shadow: 0 0 5px var(--neon-blue-dim);
 }
 
 .tab-content { display: none; animation: fadeIn 0.3s ease; }
@@ -113,7 +115,7 @@ body {
 
 /* Panels */
 .panel {
-    background: var(--panel-bg);
+    background: var(--panel-inner);
     border: 1px solid rgba(0, 229, 255, 0.3);
     padding: 15px;
     margin-bottom: 15px;
@@ -135,20 +137,20 @@ li { margin-bottom: 8px; }
 .weight-stats { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; }
 .stat-box {
     flex: 1;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid #333;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #444;
     padding: 10px;
     text-align: center;
 }
-.stat-label { display: block; font-size: 10px; color: #888; margin-bottom: 5px; }
+.stat-label { display: block; font-size: 10px; color: #999; margin-bottom: 5px; }
 .stat-value { font-size: 18px; font-weight: bold; color: white; }
-.target-glow { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+.target-glow { color: var(--neon-blue); text-shadow: 0 0 8px var(--neon-blue); }
 
 /* Inputs & Buttons */
 input[type="number"], input[type="text"] {
     width: calc(100% - 22px);
     padding: 10px;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
     border: 1px solid var(--neon-blue-dim);
     color: var(--neon-blue);
     margin-bottom: 10px;
@@ -158,7 +160,7 @@ input:focus { outline: none; border-color: var(--neon-blue); box-shadow: 0 0 8px
 
 .action-btn {
     width: 100%; padding: 12px;
-    background: rgba(0, 229, 255, 0.1);
+    background: rgba(0, 229, 255, 0.15);
     border: 1px solid var(--neon-blue);
     color: var(--neon-blue);
     font-family: inherit; font-weight: bold;
@@ -166,23 +168,23 @@ input:focus { outline: none; border-color: var(--neon-blue); box-shadow: 0 0 8px
     text-transform: uppercase;
     transition: all 0.2s;
 }
-.action-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
+.action-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
 
 /* Info Hub Chat */
 .chat-panel { padding: 10px; }
 .chat-log {
     height: 200px;
     overflow-y: auto;
-    background: rgba(0,0,0,0.5);
-    border: 1px solid #333;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid #444;
     padding: 10px;
     margin-bottom: 10px;
     font-size: 13px;
     display: flex; flex-direction: column; gap: 10px;
 }
 .message { padding: 8px; border-left: 2px solid; }
-.system-msg { border-color: var(--neon-blue); color: #a1c4fd; background: rgba(0, 229, 255, 0.05); }
-.player-msg { border-color: #aaa; color: #fff; background: rgba(255, 255, 255, 0.05); align-self: flex-end; width: 85%; }
+.system-msg { border-color: var(--neon-blue); color: #a1c4fd; background: rgba(0, 229, 255, 0.1); }
+.player-msg { border-color: #bbb; color: #fff; background: rgba(255, 255, 255, 0.1); align-self: flex-end; width: 85%; }
 .chat-input-area { display: flex; gap: 5px; }
 .chat-input-area input { margin-bottom: 0; width: 100%; }
 .chat-send { width: 80px; padding: 10px; }
@@ -191,7 +193,8 @@ input:focus { outline: none; border-color: var(--neon-blue); box-shadow: 0 0 8px
 .check-container { display: block; position: relative; padding-left: 30px; margin-bottom: 12px; cursor: pointer; font-size: 14px; user-select: none; }
 .check-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
 .checkmark { position: absolute; top: 0; left: 0; height: 18px; width: 18px; background-color: rgba(0,0,0,0.5); border: 1px solid var(--neon-blue-dim); }
-.check-container input:checked ~ .checkmark { background-color: var(--neon-blue); border-color: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
+.check-container input:checked ~ .checkmark { background-color: var(--neon-blue); border-color: var(--neon-blue); box-shadow: 0 0 12px var(--neon-blue); }
+.check-container input:disabled ~ .checkmark { opacity: 0.5; cursor: not-allowed; }
 .checkmark:after { content: ""; position: absolute; display: none; }
 .check-container input:checked ~ .checkmark:after { display: block; }
 .check-container .checkmark:after { left: 6px; top: 2px; width: 4px; height: 9px; border: solid #000; border-width: 0 2px 2px 0; transform: rotate(45deg); }
