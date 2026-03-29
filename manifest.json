@@ -1,0 +1,14 @@
+{
+  "name": "System Quest Log",
+  "short_name": "System",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#00e5ff",
+  "icons": [
+    {
+      "src": "https://script.google.com/macros/s/AKfycbyZrMGQUoMOv6hpRKsuzpuJ8XMSRUOKPq4lnVXNf4PqjHTXMosWDVD3TjBGx009UfpViQ/exec",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
