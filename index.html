@@ -6,7 +6,6 @@
     <title>System Quest Log</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
@@ -32,6 +31,7 @@
             <button onclick="switchTab('calendar')">Forecast</button>
             <button onclick="switchTab('grimoire')">Recipes</button>
             <button onclick="switchTab('status')">Status</button>
+            <button onclick="switchTab('info-hub')">Hub</button>
         </div>
 
         <div id="quests" class="tab-content active">
@@ -69,19 +69,9 @@
 
         <div id="grimoire" class="tab-content">
             <div class="panel">
-                <h2>Stored Recipes</h2>
-                <details>
-                    <summary>Tofu Bhurji (Low-Carb)</summary>
-                    <p>Crumble 1 block firm tofu. Heat ghee, add cumin seeds, turmeric, and 2 tsp Deep Dry Garlic Chutney. Add tofu and salt. Cook 5-7 mins until moisture evaporates.</p>
-                </details>
-                <details>
-                    <summary>Crispy Chilli Baby Corn (Low-Carb Mod)</summary>
-                    <p>Boil 15 baby corn pieces, halve, and marinate in lemon juice. Coat in almond flour, then crushed cheese crisps. Pan-fry in butter until golden. Dust with chaat masala.</p>
-                </details>
-                <details>
-                    <summary>Masala Idli (High-Carb)</summary>
-                    <p>Toss frozen idli in a pan with minimal oil, mustard seeds, curry leaves, peanuts, and dry chili garlic powder.</p>
-                </details>
+                <h2 id="recipe-header">Stored Recipes</h2>
+                <div id="recipe-list">
+                    </div>
             </div>
         </div>
 
@@ -117,6 +107,19 @@
                 <p id="sync-message" style="display:none; color: #00e5ff; margin-top: 10px;">[ Data Synced. Quest Updated. ]</p>
             </div>
         </div>
+
+        <div id="info-hub" class="tab-content">
+            <div class="panel chat-panel">
+                <h2>System Link Established</h2>
+                <div class="chat-log" id="chat-log">
+                    <div class="message system-msg">[ SYSTEM ]: Information Hub initialized. Awaiting player query regarding current diet or exercise protocol.</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Ask the System..." onkeypress="handleChatEnter(event)">
+                    <button onclick="sendChatMessage()" class="action-btn chat-send">SEND</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -142,8 +145,57 @@
         
         const meals = isHighCarb 
             ? ['Masala Idli', 'Rajma & Yellow Rice', 'Maggi / Kodiak Pancakes', 'Pita Chips & Hummus']
-            : ['Tofu Bhurji', 'Garlic Butter Paneer & Veggies', 'Crispy Chilli Baby Corn', 'NuTrail Granola / Cheese Crisps'];
+            : ['Tofu Bhurji', 'Garlic Butter Paneer & Veggies', 'Crispy Chilli Baby Corn', 'Masala Paneer & Peanut Toss', 'NuTrail Granola / Cheese Crisps'];
         document.getElementById('meal-list').innerHTML = meals.map(m => `<li>${m}</li>`).join('');
+
+        // --- DYNAMIC RECIPE DATABASE ---
+        const recipeDB = [
+            {
+                title: "Masala Idli (High-Carb)",
+                type: "high",
+                content: "Toss frozen idli in a pan with minimal oil, mustard seeds, curry leaves, peanuts, and dry chili garlic powder."
+            },
+            {
+                title: "Rajma & Yellow Rice (High-Carb)",
+                type: "high",
+                content: "Simmer red kidney beans and tomatoes with your traditional spice blend. Serve hot alongside yellow rice."
+            },
+            {
+                title: "Tofu Bhurji (Low-Carb)",
+                type: "low",
+                content: "Crumble 1 block firm tofu. Heat ghee, add cumin seeds, turmeric, and 2 tsp Deep Dry Garlic Chutney. Add tofu and salt. Cook 5-7 mins until moisture evaporates."
+            },
+            {
+                title: "Garlic Butter Paneer & Veggies (Low-Carb)",
+                type: "low",
+                content: "Pan-fry paneer in garlic butter until golden. Toss in frozen low-carb veggies (broccoli or cauliflower). Season with Deep Dry Garlic Chutney and stir-fry."
+            },
+            {
+                title: "Crispy Chilli Baby Corn (Low-Carb Mod)",
+                type: "low",
+                content: "Boil 15 baby corn pieces, halve, and marinate in lemon juice. Coat in almond flour, then crushed cheese crisps. Pan-fry in butter until golden. Dust with chaat masala."
+            },
+            {
+                title: "Masala Paneer & Peanut Toss (Low-Carb)",
+                type: "low",
+                content: "<strong>1. The Crunch:</strong> Heat oil/ghee, pop 1/2 tsp mustard seeds & curry leaves. Add peanuts and roast.<br><br><strong>2. The Base:</strong> Add 1 chopped tomato, cook 2-3 mins.<br><br><strong>3. Spice It:</strong> Add turmeric, salt, and 1-2 tsp Deep Dry Garlic Chutney.<br><br><strong>4. The Protein:</strong> Toss in 200g cubed paneer/tofu to coat.<br><br><strong>5. Pan-Fry:</strong> Cook 4-5 mins until hot with a crust."
+            }
+        ];
+
+        function loadRecipes() {
+            const list = document.getElementById('recipe-list');
+            const header = document.getElementById('recipe-header');
+            header.innerText = isHighCarb ? "Authorized Rations: High Carb" : "Authorized Rations: Low Carb";
+            
+            const filtered = recipeDB.filter(r => isHighCarb ? r.type === 'high' : r.type === 'low');
+            list.innerHTML = filtered.map(r => `
+                <details>
+                    <summary>${r.title}</summary>
+                    <p>${r.content}</p>
+                </details>
+            `).join('');
+        }
+        loadRecipes(); // Initialize recipes on load
 
         // --- DAILY RESET LOGIC ---
         const todayString = dateObj.toDateString();
@@ -272,6 +324,31 @@
             setTimeout(() => document.getElementById('sync-message').style.display = 'none', 3000);
             document.getElementById('weight-form').reset();
         });
+
+        // --- INFO HUB CHAT LOGIC ---
+        function handleChatEnter(event) { if (event.key === 'Enter') sendChatMessage(); }
+        
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+            const chatLog = document.getElementById('chat-log');
+            
+            chatLog.innerHTML += `<div class="message player-msg">${message}</div>`;
+            input.value = '';
+            chatLog.scrollTop = chatLog.scrollHeight;
+            
+            setTimeout(() => {
+                let systemReply = "[ SYSTEM ]: Query processed. Continue adhering to protocol.";
+                if(message.toLowerCase().includes("tofu") || message.toLowerCase().includes("paneer")) {
+                    systemReply = "[ SYSTEM ]: Protein source optimal for Low Carb cycles.";
+                } else if (message.toLowerCase().includes("hiit")) {
+                    systemReply = "[ SYSTEM ]: HIIT restricted to High Carb days.";
+                }
+                chatLog.innerHTML += `<div class="message system-msg">${systemReply}</div>`;
+                chatLog.scrollTop = chatLog.scrollHeight;
+            }, 1000);
+        }
     </script>
 </body>
 </html>
