@@ -12,8 +12,23 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
-<div class="dungeon-bg"></div>
+<div class="dungeon-bg">
+  <div class="shadow-figure">
+    <svg viewBox="0 0 400 700" xmlns="http://www.w3.org/2000/svg">
+      <polygon class="sf-body" points="90,170 140,155 150,195 100,210" />
+      <polygon class="sf-body" points="310,170 260,155 250,195 300,210" />
+      <path class="sf-body" d="M120,180 Q100,300 140,380 L70,560 L110,650 L130,580 L160,660 L185,590 L200,680 L215,590 L240,660 L270,580 L290,650 L330,560 Q260,300 280,180 Q240,150 200,150 Q160,150 120,180 Z" />
+      <ellipse class="sf-body" cx="200" cy="120" rx="45" ry="55" />
+      <polygon class="sf-body" points="180,68 200,30 220,68" />
+      <path class="sf-crack" d="M170,220 L188,260 L172,300" />
+      <path class="sf-crack" d="M230,220 L212,260 L228,300" />
+      <circle class="sf-eye" cx="182" cy="120" r="6" />
+      <circle class="sf-eye" cx="218" cy="120" r="6" />
+    </svg>
+  </div>
+</div>
 <div class="system-window">
+  <div class="boot-scan"></div>
   <div class="system-header">
     <h1>[ SYSTEM ALERT ]</h1>
     <div class="player-name">PLAYER: KARAN (RBGoku)</div>
@@ -142,40 +157,84 @@ const dateObj = new Date();
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const todayDayIndex = dateObj.getDay();
 
+// Each exercise name maps to a YouTube search (not a single pinned video ID,
+// so it never goes stale and always returns current, relevant tutorials).
+const EXERCISE_LINKS = {
+  'Goblet Squat': 'goblet squat proper form',
+  'Chest Press': 'machine chest press proper form',
+  'Low Row': 'seated cable row proper form',
+  'Shoulder Press': 'machine shoulder press proper form',
+  'Plank': 'plank proper form',
+  'Dead Bug': 'dead bug exercise proper form',
+  'Pull-up Negatives': 'negative pull up proper form',
+  'Hip Thrust': 'barbell hip thrust proper form',
+  'Step-ups': 'dumbbell step up proper form',
+  'Machine Row': 'seated row machine proper form',
+  'Overhead Press': 'overhead press proper form',
+  'Bicep Curl': 'dumbbell bicep curl proper form',
+  'Tricep Extension': 'tricep extension proper form',
+  'Leg Curl': 'leg curl machine proper form',
+  'Leg Extension': 'leg extension machine proper form',
+  'Lat Pulldown': 'lat pulldown proper form',
+  'Incline Press': 'incline chest press proper form',
+  'DB Rows': 'dumbbell row proper form'
+};
+
+function exerciseLink(name) {
+  const query = EXERCISE_LINKS[name];
+  if (!query) return name;
+  const url = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query);
+  return `<a href="${url}" target="_blank" rel="noopener" class="exercise-link">${name}</a>`;
+}
+
 const weeklyPlan = {
   0: { // Sunday
     label: 'GYM DAY',
-    workout: '▶ Full Body C — Hip Thrust/Step-ups, Machine Row, Overhead Press, Bicep/Tricep Superset, Plank/Dead Bug + Weekly Push-up/Sit-up Test',
+    dayTitle: 'Full Body C',
+    exercises: ['Hip Thrust', 'Step-ups', 'Machine Row', 'Overhead Press', 'Bicep Curl', 'Tricep Extension', 'Plank', 'Dead Bug'],
+    note: '+ Weekly Push-up/Sit-up Test',
     meals: ['No breakfast — Frap + Fairlife 42g (pre-workout)', 'Pesto Caprese Flatbread or Chipotle/Cava', 'Dal/Rajma + Rice']
   },
   1: { // Monday
     label: 'CARDIO DAY',
-    workout: '▶ Run/Walk Intervals — 15-20 min',
+    dayTitle: 'Run/Walk Intervals',
+    exercises: [],
+    note: '15-20 min',
     meals: ['Dunkin Tiramisu Cloud + Egg & Cheese Bagel', 'Rajma or Dal + Rice', 'Rajma/Dal + Rice, or Tomato-Garlic Paneer']
   },
   2: { // Tuesday
     label: 'GYM DAY',
-    workout: '▶ Full Body A — Goblet Squat, Chest Press, Low Row, Shoulder Press, Plank/Dead Bug + Pull-up Negatives',
+    dayTitle: 'Full Body A',
+    exercises: ['Goblet Squat', 'Chest Press', 'Low Row', 'Shoulder Press', 'Plank', 'Dead Bug', 'Pull-up Negatives'],
+    note: '',
     meals: ['No breakfast — Frap + Fairlife 42g (pre-workout)', 'Pesto Caprese Flatbread', 'Dal/Rajma + Rice — go heavier here']
   },
   3: { // Wednesday
     label: 'REST DAY',
-    workout: '▶ Rest — no scheduled training',
+    dayTitle: 'Rest',
+    exercises: [],
+    note: 'no scheduled training',
     meals: ['Dunkin Tiramisu Cloud + Egg & Cheese Bagel', 'Rajma or Dal + Rice', 'Tomato-Garlic Paneer + Rice']
   },
   4: { // Thursday
     label: 'GYM DAY',
-    workout: '▶ Full Body B — Leg Curl/Extension, Lat Pulldown, Incline Press, DB Rows, Plank/Dead Bug + Pull-up Negatives',
+    dayTitle: 'Full Body B',
+    exercises: ['Leg Curl', 'Leg Extension', 'Lat Pulldown', 'Incline Press', 'DB Rows', 'Plank', 'Dead Bug', 'Pull-up Negatives'],
+    note: '',
     meals: ['No breakfast — Frap + Fairlife 42g (pre-workout)', 'Pesto Caprese Flatbread', 'Dal/Rajma + Rice — go heavier here']
   },
   5: { // Friday
     label: 'CARDIO DAY',
-    workout: '▶ Run/Walk Intervals — 15-20 min',
+    dayTitle: 'Run/Walk Intervals',
+    exercises: [],
+    note: '15-20 min',
     meals: ['Dunkin Tiramisu Cloud + Egg & Cheese Bagel', 'Rajma or Dal + Rice', 'Loaded Aglio Olio (chickpeas + veggies)']
   },
   6: { // Saturday
     label: 'OFF DAY',
-    workout: '▶ Off — Errands / Grocery Run / Treat Day',
+    dayTitle: 'Off',
+    exercises: [],
+    note: 'Errands / Grocery Run / Treat Day',
     meals: ['No breakfast — Frap (Light, if available)', 'Chipotle or Cava (double beans/lentils build)', 'Light — Maggi + Egg or Idli, plus planned treat']
   }
 };
@@ -183,7 +242,16 @@ const weeklyPlan = {
 const todayPlan = weeklyPlan[todayDayIndex];
 
 document.getElementById('current-day').innerText = `Protocol: ${days[todayDayIndex]} — ${todayPlan.label}`;
-document.getElementById('workout-type').innerText = todayPlan.workout;
+
+// Render the quest objective with linked exercise names
+const workoutEl = document.getElementById('workout-type');
+if (todayPlan.exercises.length > 0) {
+  const linked = todayPlan.exercises.map(exerciseLink).join(', ');
+  workoutEl.innerHTML = `▶ ${todayPlan.dayTitle} — ${linked}${todayPlan.note ? ' ' + todayPlan.note : ''}`;
+} else {
+  workoutEl.innerHTML = `▶ ${todayPlan.dayTitle}${todayPlan.note ? ' — ' + todayPlan.note : ''}`;
+}
+
 document.getElementById('meal-list').innerHTML = todayPlan.meals.map(m => `<li>${m}</li>`).join('');
 
 // --- RECIPE DATABASE (Grimoire) ---
