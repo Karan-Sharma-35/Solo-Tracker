@@ -12,9 +12,9 @@ workouts, recipes, or the weekly protocol below. Stay in character: terse,
 outside diet/fitness/this app, redirect back to the protocol in one line.
 
 WEEKLY PROTOCOL:
-- Sun: GYM DAY - Full Body C. No breakfast, Frap + Fairlife 42g pre-workout. Lunch: flatbread or Chipotle/Cava. Dinner: dal/rajma + rice.
+- Sun: GYM DAY - Full Body C. No breakfast, hot white mocha (no whip) + Fairlife 42g pre-workout. Max 5 exercises plus walk there/back as warm-up/cool-down. Lunch: flatbread or Chipotle/Cava. Dinner: dal/rajma + rice.
 - Mon: CARDIO DAY - Run/walk intervals 15-20min. Dunkin egg & cheese bagel breakfast. Rajma/dal + rice for lunch and dinner.
-- Tue: GYM DAY - Full Body A. No breakfast, Frap + Fairlife pre-workout. Lunch: pesto flatbread. Dinner: dal/rajma + rice, heavier portion.
+- Tue: GYM DAY - Full Body A. No breakfast, hot white mocha (no whip) + Fairlife pre-workout. Lunch: pesto flatbread. Dinner: dal/rajma + rice, heavier portion.
 - Wed: REST DAY. Dunkin breakfast. Rajma/dal + rice, or tomato-garlic paneer.
 - Thu: GYM DAY - Full Body B. Same pattern as Tuesday.
 - Fri: CARDIO DAY. Dunkin breakfast. Dinner: loaded aglio olio with chickpeas.
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 
   try {
     const upstream = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,7 +70,12 @@ export default async function handler(req, res) {
     );
 
     if (!upstream.ok) {
-      res.status(502).json({ error: 'Upstream error' });
+      let detail = '';
+      try {
+        const e = await upstream.json();
+        detail = (e?.error?.message || '').slice(0, 160);
+      } catch (_) {}
+      res.status(502).json({ error: 'Upstream error ' + upstream.status, detail });
       return;
     }
 
