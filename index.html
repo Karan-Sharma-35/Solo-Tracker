@@ -378,12 +378,50 @@ if (savedDate !== todayString) {
   document.getElementById('chk-weight').checked = localStorage.getItem('chk-weight') === 'true';
 }
 
+// --- INACTIVITY PENALTY ---
+// Interaction = ticking a daily quest, logging weight, or setting a target.
+// Every 3 full days in a row with no interaction costs 1 level (min Level 1).
+function localDayKey(d) {
+  d = d || new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function dayNumber(key) {
+  const p = key.split('-').map(Number);
+  return Date.UTC(p[0], p[1] - 1, p[2]) / 86400000; // UTC math so DST can't shift the count
+}
+function markActive() {
+  localStorage.setItem('systemLastActive', localDayKey());
+  localStorage.setItem('systemPenaltiesApplied', '0');
+}
+(function applyInactivityPenalty() {
+  const today = localDayKey();
+  const last = localStorage.getItem('systemLastActive');
+  if (!last) { markActive(); return; } // first run with this feature: start the clock today
+  const missedDays = Math.max(0, dayNumber(today) - dayNumber(last) - 1); // fully skipped days; today is still open
+  const due = Math.floor(missedDays / 3);
+  const applied = parseInt(localStorage.getItem('systemPenaltiesApplied') || '0');
+  if (due > applied) {
+    const before = playerLevel;
+    playerLevel = Math.max(1, playerLevel - (due - applied));
+    if (playerLevel === 1) currentXP = 0;
+    localStorage.setItem('systemPlayerLevel', playerLevel);
+    localStorage.setItem('systemCurrentXP', currentXP);
+    localStorage.setItem('systemPenaltiesApplied', String(due));
+    document.getElementById('player-level').innerText = playerLevel;
+    updateXPDisplay();
+    if (playerLevel < before) {
+      alert(`[ SYSTEM ALERT: INACTIVITY PENALTY ]\n${missedDays} days without contact. Level ${before} -> Level ${playerLevel}.`);
+    }
+  }
+})();
+
 // --- LEVELING & XP LOGIC ---
 function handleQuest(questId, xpValue) {
   const isChecked = document.getElementById(questId).checked;
   localStorage.setItem(questId, isChecked);
 
   if (isChecked) {
+    markActive();
     currentXP += xpValue;
   } else {
     currentXP -= xpValue;
@@ -465,6 +503,7 @@ function switchTab(tabId) {
 document.getElementById('target-form').addEventListener('submit', function(e) {
   e.preventDefault();
   const newTarget = parseFloat(document.getElementById('target-input').value);
+  markActive();
   localStorage.setItem('systemTargetWeight', newTarget);
   targetWeight = newTarget;
   document.getElementById('target-weight-display').innerText = newTarget.toFixed(1) + ' kg';
@@ -474,6 +513,7 @@ document.getElementById('target-form').addEventListener('submit', function(e) {
 document.getElementById('weight-form').addEventListener('submit', function(e) {
   e.preventDefault();
   const newWeight = parseFloat(document.getElementById('weight-input').value);
+  markActive();
   localStorage.setItem('systemCurrentWeight', newWeight);
   currentWeight = newWeight;
   document.getElementById('current-weight-display').innerText = newWeight.toFixed(1) + ' kg';
