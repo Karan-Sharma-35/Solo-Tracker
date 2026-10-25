@@ -15,15 +15,34 @@
 <div class="dungeon-bg">
   <div class="shadow-figure">
     <svg viewBox="0 0 400 700" xmlns="http://www.w3.org/2000/svg">
-      <polygon class="sf-body" points="90,170 140,155 150,195 100,210" />
-      <polygon class="sf-body" points="310,170 260,155 250,195 300,210" />
-      <path class="sf-body" d="M120,180 Q100,300 140,380 L70,560 L110,650 L130,580 L160,660 L185,590 L200,680 L215,590 L240,660 L270,580 L290,650 L330,560 Q260,300 280,180 Q240,150 200,150 Q160,150 120,180 Z" />
-      <ellipse class="sf-body" cx="200" cy="120" rx="45" ry="55" />
-      <polygon class="sf-body" points="180,68 200,30 220,68" />
-      <path class="sf-crack" d="M170,220 L188,260 L172,300" />
-      <path class="sf-crack" d="M230,220 L212,260 L228,300" />
-      <circle class="sf-eye" cx="182" cy="120" r="6" />
-      <circle class="sf-eye" cx="218" cy="120" r="6" />
+      <path class="sf-body" d="M200,40
+        Q212,55 215,75
+        Q245,80 270,110
+        L330,150
+        L300,175
+        Q280,195 270,220
+        Q290,270 290,320
+        Q330,400 340,480
+        L300,600
+        L270,560
+        L240,640
+        L215,580
+        L200,660
+        L185,580
+        L160,640
+        L130,560
+        L100,600
+        L60,480
+        Q70,400 110,320
+        Q110,270 130,220
+        Q120,195 100,175
+        L70,150
+        L130,110
+        Q155,80 185,75
+        Q188,55 200,40 Z" />
+      <path class="sf-crack" d="M198,240 L204,300 L196,350" />
+      <circle class="sf-eye" cx="183" cy="108" r="6" />
+      <circle class="sf-eye" cx="217" cy="108" r="6" />
     </svg>
   </div>
 </div>
@@ -166,7 +185,7 @@ const EXERCISE_LINKS = {
   'Shoulder Press': 'machine shoulder press proper form',
   'Plank': 'plank proper form',
   'Dead Bug': 'dead bug exercise proper form',
-  'Pull-up Negatives': 'negative pull up proper form',
+  'Romanian Deadlift': 'barbell romanian deadlift proper form',
   'Hip Thrust': 'barbell hip thrust proper form',
   'Step-ups': 'dumbbell step up proper form',
   'Machine Row': 'seated row machine proper form',
@@ -177,7 +196,9 @@ const EXERCISE_LINKS = {
   'Leg Extension': 'leg extension machine proper form',
   'Lat Pulldown': 'lat pulldown proper form',
   'Incline Press': 'incline chest press proper form',
-  'DB Rows': 'dumbbell row proper form'
+  'DB Rows': 'dumbbell row proper form',
+  'Barbell Squat': 'barbell back squat proper form',
+  'Seated Row': 'seated cable row proper form'
 };
 
 function exerciseLink(name) {
@@ -191,9 +212,9 @@ const weeklyPlan = {
   0: { // Sunday
     label: 'GYM DAY',
     dayTitle: 'Full Body C',
-    exercises: ['Hip Thrust', 'Step-ups', 'Machine Row', 'Overhead Press', 'Bicep Curl', 'Tricep Extension', 'Plank', 'Dead Bug'],
-    note: '+ Weekly Push-up/Sit-up Test',
-    meals: ['No breakfast — Frap + Fairlife 42g (pre-workout)', 'Pesto Caprese Flatbread or Chipotle/Cava', 'Dal/Rajma + Rice']
+    exercises: ['Hip Thrust', 'Machine Row', 'Overhead Press', 'Tricep Extension', 'Dead Bug'],
+    note: '+ Walk there/back = warm-up/cool-down · Weekly Push-up/Sit-up Test',
+    meals: ['No breakfast — Hot white mocha (no whip) + Fairlife 42g (pre-workout)', 'Pesto Caprese Flatbread or Chipotle/Cava', 'Dal/Rajma + Rice']
   },
   1: { // Monday
     label: 'CARDIO DAY',
@@ -205,9 +226,9 @@ const weeklyPlan = {
   2: { // Tuesday
     label: 'GYM DAY',
     dayTitle: 'Full Body A',
-    exercises: ['Goblet Squat', 'Chest Press', 'Low Row', 'Shoulder Press', 'Plank', 'Dead Bug', 'Pull-up Negatives'],
-    note: '',
-    meals: ['No breakfast — Frap + Fairlife 42g (pre-workout)', 'Pesto Caprese Flatbread', 'Dal/Rajma + Rice — go heavier here']
+    exercises: ['Barbell Squat', 'Chest Press', 'Low Row', 'Shoulder Press', 'Dead Bug'],
+    note: '+ Walk there/back = warm-up/cool-down',
+    meals: ['No breakfast — Hot white mocha (no whip) + Fairlife 42g (pre-workout)', 'Pesto Caprese Flatbread', 'Dal/Rajma + Rice — go heavier here']
   },
   3: { // Wednesday
     label: 'REST DAY',
@@ -219,9 +240,9 @@ const weeklyPlan = {
   4: { // Thursday
     label: 'GYM DAY',
     dayTitle: 'Full Body B',
-    exercises: ['Leg Curl', 'Leg Extension', 'Lat Pulldown', 'Incline Press', 'DB Rows', 'Plank', 'Dead Bug', 'Pull-up Negatives'],
-    note: '',
-    meals: ['No breakfast — Frap + Fairlife 42g (pre-workout)', 'Pesto Caprese Flatbread', 'Dal/Rajma + Rice — go heavier here']
+    exercises: ['Goblet Squat', 'Chest Press', 'Seated Row', 'Lat Pulldown', 'Romanian Deadlift'],
+    note: '+ Walk there/back = warm-up/cool-down',
+    meals: ['No breakfast — Hot white mocha (no whip) + Fairlife 42g (pre-workout)', 'Pesto Caprese Flatbread', 'Dal/Rajma + Rice — go heavier here']
   },
   5: { // Friday
     label: 'CARDIO DAY',
@@ -235,7 +256,7 @@ const weeklyPlan = {
     dayTitle: 'Off',
     exercises: [],
     note: 'Errands / Grocery Run / Treat Day',
-    meals: ['No breakfast — Frap (Light, if available)', 'Chipotle or Cava (double beans/lentils build)', 'Light — Maggi + Egg or Idli, plus planned treat']
+    meals: ['No breakfast — Hot white mocha (no whip) if wanted', 'Chipotle or Cava (double beans/lentils build)', 'Light — Maggi + Egg or Idli, plus planned treat']
   }
 };
 
@@ -519,11 +540,11 @@ function localFallbackReply(message) {
   } else if (msg.includes("kurkure") || msg.includes("dessert") || msg.includes("treat") || msg.includes("coldstone")) {
     return "[ SYSTEM ]: Treat protocol active on Saturday. One treat only — Kurkure or a Coldstone build, never both.";
   } else if (msg.includes("pull")) {
-    return "[ SYSTEM ]: Pull-up training — negative reps, 2x/week. Weight loss compounds this objective.";
+    return "[ SYSTEM ]: Pull-up training is paused. Lose weight and strengthen the back first — rows, lat pulldown and Romanian deadlifts cover it.";
   } else if (msg.includes("run") || msg.includes("cardio")) {
     return "[ SYSTEM ]: Run/Walk intervals scheduled Monday and Friday.";
-  } else if (msg.includes("frap") || msg.includes("starbucks")) {
-    return "[ SYSTEM ]: Consider Frappuccino Light — high sugar load otherwise.";
+  } else if (msg.includes("frap") || msg.includes("mocha") || msg.includes("starbucks")) {
+    return "[ SYSTEM ]: Hot white mocha, no whip — it's still a sweet drink, so it's your pre-workout coffee, not a snack. Pair it with the Fairlife.";
   } else if (msg.includes("plank") || msg.includes("back")) {
     return "[ SYSTEM ]: Dead bug / bird dog substituted for planks — lower spinal load.";
   }
@@ -537,12 +558,17 @@ async function getSystemReply(message) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message })
     });
-    if (!res.ok) throw new Error('bad status');
+    if (!res.ok) {
+      let detail = '';
+      try { const e = await res.json(); detail = e.detail || e.error || ''; } catch (_) {}
+      throw new Error('HTTP ' + res.status + (detail ? ' - ' + detail : ''));
+    }
     const data = await res.json();
     if (!data.reply) throw new Error('empty reply');
     return data.reply;
   } catch (err) {
-    return localFallbackReply(message); // offline, rate-limited, or no key set yet
+    // Diagnostic tag so a failing cloud link says WHY (remove once it works).
+    return localFallbackReply(message) + ' [link error: ' + err.message + ']';
   }
 }
 
