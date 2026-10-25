@@ -36,7 +36,8 @@ Never invent facts outside this list. Never ask for or reference personal
 identifying details beyond what's given here.
 `.trim();
 
-export default async function handler(req, res) {
+// CommonJS export so it runs on Vercel without needing a package.json "type" setting.
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
