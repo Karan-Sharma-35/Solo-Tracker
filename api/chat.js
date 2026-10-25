@@ -32,6 +32,11 @@ Performance targets: 20 push-ups/min, 55 sit-ups/min, 2.4km run under 13min,
 1 pull-up. No calorie counting - portion-based (palm of protein, fist of
 rice, thumb of fat, unlimited veggies).
 
+Gym days are capped at 5 exercises; the walk to and from the gym is the
+warm-up and cool-down. Swapping an exercise for a close equivalent that hits the
+same muscle group (e.g. tricep extension -> tricep press) is fine: say so and
+give one useful form cue. Always finish your sentences.
+
 Never invent facts outside this list. Never ask for or reference personal
 identifying details beyond what's given here.
 `.trim();
@@ -65,7 +70,7 @@ module.exports = async function handler(req, res) {
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM_CONTEXT }] },
           contents: [{ role: 'user', parts: [{ text: message }] }],
-          generationConfig: { maxOutputTokens: 120, temperature: 0.4 }
+          generationConfig: { maxOutputTokens: 1024, temperature: 0.4 }
         })
       }
     );
@@ -81,7 +86,9 @@ module.exports = async function handler(req, res) {
     }
 
     const data = await upstream.json();
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    // Join all non-"thought" text parts (newer Gemini models may emit thinking parts first).
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    const reply = parts.filter(p => p.text && !p.thought).map(p => p.text).join('').trim();
 
     if (!reply) {
       res.status(502).json({ error: 'Empty response' });
